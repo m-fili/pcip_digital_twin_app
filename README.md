@@ -1,8 +1,8 @@
 # PCIP Digital Twin — Web App
 
-[![Open in Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://picpdigitaltwin.streamlit.app/)
+[![Open in Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://digital-twin-pcip.streamlit.app/)
 
-**Live demo:** <https://picpdigitaltwin.streamlit.app/>
+**Live demo:** <https://digital-twin-pcip.streamlit.app/>
 
 Browser-based companion to *A Digital-Twin Model for Personalized Cognitive
 Intervention Programs*. Dark-themed Streamlit app with three live modules:
