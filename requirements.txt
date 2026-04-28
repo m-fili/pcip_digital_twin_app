@@ -1,0 +1,10 @@
+# Pull torch from PyTorch's CPU-only wheel index (~200 MB) instead of the
+# default GPU-enabled wheel (~1 GB). Streamlit Cloud has no GPU.
+--extra-index-url https://download.pytorch.org/whl/cpu
+
+streamlit>=1.32
+numpy>=1.24
+matplotlib>=3.7
+pandas>=2.0
+pyyaml>=6.0
+torch>=2.0

@@ -1,0 +1,132 @@
+# PCIP Model — Default Parameter Configuration
+# =============================================
+# Sections:
+#   predefined   : fixed values used as-is (Arousal, Valence — not estimated)
+#   global_init  : starting values for globally-estimated parameters
+#   domain_init  : per-domain defaults (replicated for each domain k)
+#   simulation   : hyperparameters for generating synthetic participants/games
+#
+# Parameter transforms used in simulation sampling:
+#   _logit suffix : value stored in logit space; sample via sigmoid(N(mu, sigma))
+#   _log   suffix : value stored in log space;   sample via exp(N(mu, sigma))
+#   direct        : sample from N(mu, sigma), clip to valid range
+
+# ---------------------------------------------------------------------------
+# Predefined parameters — not estimated, loaded directly into forward pass
+# ---------------------------------------------------------------------------
+predefined:
+
+  # Arousal: A = A_min + (1-A_min)·σ(γ0A + γ1A·(u-0.5))·φ(δ | 0, K(u))
+  #          K(u) = K0 + ρ_u·u
+  arousal:
+    A_min:    0.2    # floor arousal level ∈ [0, 1]
+    gamma0_A: -0.5    # sigmoid intercept (neutral at u = 0.5)
+    gamma1_A: 15    # sensitivity to utility (positive → higher u raises arousal)
+    K0:       1.0    # baseline Gaussian kernel bandwidth
+    rho_u:    50.0    # utility modulates bandwidth (higher u → broader arousal range)
+
+  # Valence: V = tanh([γ0V + γVu(2u-1) - γVh·((-δ)₊^βVh)² - γVe·((δ)₊^βVe)²] / τV)
+  valence:
+    gamma0_V: 0.0    # baseline valence (slightly positive)
+    gamma_Vu: 10.0    # utility effect: higher u → more positive valence
+    gamma_Vh: 0.06    # frustration weight: penalises too-hard games (δ < 0)
+    gamma_Ve: 0.09    # boredom weight: penalises too-easy games (δ > 0)
+    tau_V:    5.0    # temperature (sharpness of tanh response)
+    beta_Vh:  5.0    # SoftPlus sharpness for hardship term  [fixed design choice]
+    beta_Ve:  5.0    # SoftPlus sharpness for ease term      [fixed design choice]
+
+# ---------------------------------------------------------------------------
+# Global estimated parameters — initial values for optimiser
+# ---------------------------------------------------------------------------
+global_init:
+
+  # --- Expected Score ---
+  gamma0:       1.0    # ES intercept  → ~73% score at δ = 0  (logit⁻¹(1) ≈ 0.731)
+  gamma1:       1.5    # gap sensitivity (positive: higher ability → higher score)
+
+  # --- Emotional Regulator ---
+  E_min:        0.3    # floor emotion multiplier  ∈ (0, 1)
+  kappa_A:      0.15    # arousal Gaussian kernel bandwidth
+  kappa_V:      0.5    # valence Gaussian kernel bandwidth
+  alpha_A:      0.1    # arousal sharpness exponent
+  alpha_V:      0.4    # valence sharpness exponent
+
+  # --- Practice Bias ---
+  kappa_B:      3.0    # bias modulation bandwidth
+  delta_B_star: 0.0    # gap at which bias is maximal (0 = perfect match)
+
+  # --- Game Effectiveness ---
+  zeta_min:     0.4    # effectiveness floor ∈ [0, 1]
+  lambda_Z:     0.03   # effectiveness decay rate per prior play  [was 0.1 — slowed to sustain gains over 20 sessions]
+
+  # --- Mismatch Effect ---
+  kappa_L:      3.0    # left-tail bandwidth  (too-hard side; larger = more tolerant)  [was 2.0]
+  kappa_R:      1.0    # right-tail bandwidth (too-easy side; smaller = less tolerant)  [was 1.0]
+  delta_star:   0.0    # optimal gap (δ* = 0: ability matches difficulty)
+
+  # --- Game Engagement ---
+  u_min:        0.1    # engagement floor ∈ [0, 1)
+  alpha_u:      2.0    # engagement convexity  (> 1 penalises low utility)
+
+  # --- Fatigue Cost ---
+  rho0_F:       0.1    # baseline fatigue scale
+  rho_h_F:      0.8    # extra fatigue multiplier for too-hard games
+  rho_e_F:      0.4    # extra fatigue multiplier for too-easy games
+  tau_F:        1.5    # mismatch fatigue decay scale
+
+  # --- Ability Dynamics ---
+  rho_Q:        0.8    # cumulative impact decay ∈ (0, 1)  (per session)
+
+# ---------------------------------------------------------------------------
+# Domain-specific defaults — one value applied to all K domains initially
+# ---------------------------------------------------------------------------
+domain_init:
+  eta_k:   0.2    # learning rate: accumulated impact → ability gain  [was 0.1]
+  Bk_max:  0.3    # max practice bias amplitude  (per domain)
+  Bk_min:  0.0    # min practice bias amplitude  (per domain)
+
+# ---------------------------------------------------------------------------
+# Simulation hyperparameters — for generating synthetic data
+# ---------------------------------------------------------------------------
+simulation:
+
+  # Program structure
+  program:
+    K:   3     # number of cognitive domains
+    Nk:  8     # games per domain  (same for all domains)
+    M:   10     # games played per session
+    T:   30    # total number of sessions
+    I:   100    # number of participants
+
+  # Individual-level generation  (ParticipantPool)
+  # C_ik^1 ~ clip(N(mu_C, sigma_C), 0, 10)
+  # A_i*   ~ clip(N(mu_A_star, sigma_A_star), 0, 1)
+  # u_ijk  ~ sigmoid(N(mu_u_logit, sigma_u_logit))
+  population:
+    mu_C:          5.0    # mean initial ability per domain  [0, 10 scale]
+    sigma_C:       1.5    # std across individuals
+    mu_A_star:     0.7    # mean optimal arousal  (direct, clipped to [0, 1])
+    sigma_A_star:  0.10   # std optimal arousal
+    mu_u_logit:    0.0    # logit-scale mean for u_ijk  (sigmoid(0) = 0.5)
+    sigma_u_logit: 1.0    # logit-scale std  (gives spread across [0.1, 0.9])
+
+  # Game-level generation  (GamePool)
+  # Hierarchical: domain means first, then within-domain deviations
+  # zeta_jk ~ sigmoid(mu_zeta_k + N(0, sigma_zeta²))
+  # beta0_jk ~ exp(mu_beta0_k + N(0, sigma_beta0²))
+  # beta1_jk ~ exp(mu_beta1_k + N(0, sigma_beta1²))
+  game_pool:
+    # Domain-level means (one per domain k = 0, ..., K-1)
+    domain_names:          ["EF", "MEM", "VS"]
+    domain_mu_zeta_logit:  [0.5, 0.0, -0.3]     # EF > MEM > VS effectiveness
+    domain_mu_log_beta0:   [-1.6, -1.6, -1.6]   # bias rate per domain
+    domain_mu_log_beta1:   [0.0, 0.0, 0.0]      # bias shape per domain
+    # Within-domain spread (shared across domains)
+    sigma_zeta_logit: 0.3    # logit std for ζ deviations within domain
+    sigma_log_beta0:  0.2    # log std for β₀ deviations
+    sigma_log_beta1:  0.15   # log std for β₁ deviations
+
+  # Noise levels
+  noise:
+    sigma_OGS: 0.15    # log-scale OGS noise std  (ε_OGS ~ N(0, sigma_OGS²))  [was 0.10 — widened for realistic trial-to-trial variability and more responsive staircase]
+    sigma_pi:  0.02    # gain noise std            (ε_π   ~ N(0, sigma_pi²))
