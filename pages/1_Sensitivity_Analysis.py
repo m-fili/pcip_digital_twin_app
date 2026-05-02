@@ -22,7 +22,21 @@ from components import (  # noqa: E402
     expected_score, game_effectiveness, mismatch, engagement, fatigue,
     arousal, valence, emot, practice_bias, omega_B,
 )
-from plotting import prettify, add_subplot_label, fig_to_png_bytes  # noqa: E402
+from plotting import (  # noqa: E402
+    prettify, add_subplot_label, fig_to_png_bytes,
+    NAVY_200, INK,
+)
+
+
+# Theme-friendly callout box for in-plot value annotations.
+# Dark facecolor + soft hairline edge so labels read against the dark axes
+# background. matplotlib doesn't accept CSS-style rgba strings, so the edge
+# is given as an (r, g, b, a) tuple.
+_CALLOUT_BBOX = dict(
+    facecolor=NAVY_200,
+    edgecolor=(241/255, 245/255, 251/255, 0.18),
+    boxstyle="round,pad=0.3", linewidth=0.8,
+)
 
 
 st.set_page_config(page_title="Sensitivity Analysis", layout="wide")
@@ -126,8 +140,8 @@ def render_es():
         ax.scatter([0], [es_match], zorder=5, color="C3")
         ax.annotate(f"{es_match:.1f}", (0, es_match),
                     xytext=(6, 6), textcoords="offset points",
-                    fontsize=11, fontweight="bold",
-                    bbox=dict(facecolor="white", edgecolor="black", boxstyle="round,pad=0.3"))
+                    fontsize=11, fontweight="bold", color=INK,
+                    bbox=_CALLOUT_BBOX)
         ax.set_xlabel(r"Ability–Difficulty Gap ($\delta$)")
         ax.set_ylabel("Expected Score")
         ax.set_ylim(-5, 105)
@@ -147,9 +161,8 @@ def render_es():
             s = float(expected_score(0.0, g0, gamma1))
             ax.scatter([0], [s], zorder=5)
             ax.annotate(f"{s:.1f}", (0, s), xytext=(6, 0),
-                        textcoords="offset points", fontsize=9,
-                        bbox=dict(facecolor="white", edgecolor="black",
-                                  alpha=0.9, boxstyle="round,pad=0.2"))
+                        textcoords="offset points", fontsize=9, color=INK,
+                        bbox=_CALLOUT_BBOX)
             data[f"ES_g0={g0}"] = es
         ax.axhline(50, color="gray", linestyle="--", alpha=0.7)
         ax.axvline(0, color="gray", linestyle="--", alpha=0.7)

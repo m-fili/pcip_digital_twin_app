@@ -100,13 +100,14 @@ h3 { font-size: 1.15rem !important; }
 
 /* Tab styling */
 [data-baseweb="tab-list"] {
-  gap: 6px;
+  gap: 22px;
   border-bottom: 1px solid var(--hair-soft);
 }
 [data-baseweb="tab"] {
   color: var(--ink-mute) !important;
   font-weight: 500 !important;
   letter-spacing: 0.01em;
+  padding: 8px 14px !important;
 }
 [data-baseweb="tab"][aria-selected="true"] {
   color: var(--cyan) !important;
