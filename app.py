@@ -288,6 +288,8 @@ CSS = r"""
   }
   .pcip-footer a { color: var(--ink-dim) !important; text-decoration: none !important; margin-left: 20px; }
   .pcip-footer a:hover { color: var(--ink) !important; }
+  /* Inline license link (sits next to the copyright, no left margin) */
+  .pcip-footer a.pcip-license { margin-left: 0; }
   .pcip-author { color: var(--ink-mute); }
   .pcip-author .pcip-name {
     color: var(--ink-dim);
@@ -384,7 +386,12 @@ BODY = r"""
   </div>
 
   <div class="pcip-footer">
-    <div>&copy; 2026 &middot; PCIP Digital Twin</div>
+    <div>
+      &copy; 2026 &middot; PCIP Digital Twin
+      &middot;
+      <a href="https://creativecommons.org/licenses/by-nc-nd/4.0/"
+         target="_blank" rel="noopener" class="pcip-license">CC BY-NC-ND 4.0</a>
+    </div>
     <div class="pcip-author">__AUTHOR_HTML__</div>
   </div>
 </div>
