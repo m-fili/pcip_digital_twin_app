@@ -1,7 +1,7 @@
 # PCIP Digital Twin
 
 [![Open in Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://digital-twin-pcip.streamlit.app/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![License: CC BY-NC-ND 4.0](https://img.shields.io/badge/License-CC%20BY--NC--ND%204.0-lightgrey.svg)](LICENSE)
 [![Python](https://img.shields.io/badge/Python-3.11%2B-3776AB.svg)](https://www.python.org/)
 [![Streamlit](https://img.shields.io/badge/Built%20with-Streamlit-FF4B4B.svg)](https://streamlit.io/)
 
@@ -104,4 +104,8 @@ shortly.
 
 ## License
 
-Released under the [MIT License](LICENSE). © 2026 Mohammad Fili.
+© 2026 Mohammad Fili. Released under the
+[Creative Commons Attribution-NonCommercial-NoDerivatives 4.0
+International License (CC BY-NC-ND 4.0)](LICENSE). You may view and
+share this work with attribution; commercial use and the distribution
+of modified versions are not permitted.
