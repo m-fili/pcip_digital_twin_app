@@ -7,41 +7,26 @@
 
 **Live demo:** <https://digital-twin-pcip.streamlit.app/>
 
-An interactive web companion to the manuscript *A Digital-Twin Model for
-Personalized Cognitive Intervention Programs* (PCIP).
+An interactive web companion to the manuscript *A Digital-Twin Model
+for Personalized Cognitive Intervention Programs* (PCIP).
 
 ---
 
 ## About the project
 
-Cognitive intervention programs (CIPs) — structured regimens of
-brain-training games targeting executive function, memory, and
-visuospatial reasoning — produce highly heterogeneous outcomes across
-older adults. Two participants on the same protocol can finish with very
-different trajectories, and one-size-fits-all schedules leave gains on
-the table.
+Cognitive intervention programs — structured regimens of brain-training
+games for older adults — produce highly heterogeneous outcomes. Two
+participants on the same protocol can finish with very different
+trajectories, and one-size-fits-all schedules leave gains on the table.
 
 **PCIP is a digital-twin framework that models a participant's
 session-by-session cognitive trajectory** under a given intervention
-program. It couples three layers:
+program. Once fit, the digital twin enables what-if analysis on
+schedules, game pools, and difficulty policies *before* enrolling real
+participants.
 
-- a **psychometric layer** that turns latent ability and game difficulty
-  into observed game scores via an IRT-style link, modulated by
-  practice effects and an emotional regulator (arousal × valence);
-- a **gain layer** that decomposes per-session learning into game
-  effectiveness, ability-difficulty mismatch, engagement, and fatigue;
-- a **dynamics layer** that accumulates gains into a latent ability
-  trajectory across sessions and games, with power-law forgetting and
-  adaptive delta-rule updating.
-
-The model was developed against the ADNI cohort (N = 309 cognitively
-normal older adults) and covers three cognitive domains — executive
-function (EF), memory (MEM), and visuospatial (VS). Once fit, the
-digital twin enables what-if analysis on schedules, game pools, and
-difficulty policies *before* enrolling real participants.
-
-This repository hosts the **public-facing web app** that accompanies
-the paper. It lets readers reproduce every figure, run their own
+This repository hosts the public-facing web app that accompanies the
+paper. It lets readers reproduce key figures, run their own
 simulations, and fit the estimator end-to-end in the browser.
 
 ---
@@ -53,34 +38,30 @@ landing page.
 
 ### 1. Sensitivity Analysis
 
-Interactive sliders for each of the nine model components — game
-score (ES), game effectiveness Z(n), mismatch Ψ(δ), engagement E(u),
-fatigue F(m, δ), arousal A, valence V, the emotional multiplier Emot,
-and practice bias. Every component shows a single-curve "live" tab
-plus paper-style comparison panels, with PNG and CSV downloads of
-the underlying curves.
+Interactive sliders for each model component — game score, game
+effectiveness, ability-difficulty mismatch, engagement, fatigue,
+arousal, valence, the emotional multiplier, and practice bias. Every
+component shows a single-curve "live" tab plus paper-style comparison
+panels, with PNG and CSV downloads of the underlying curves.
 
 ### 2. Simulation
 
-A full forward simulation of a CIP. The sidebar exposes program
-structure (participants, sessions, games-per-session), the difficulty
-policy (staircase or random), the random seed, and all 30+ model
-parameters in collapsible sections. You can save and load YAML
-configurations, **pin runs to overlay** their trajectories against a
-new run, and download a `.pt` dataset bundle to feed back into the
+A full forward simulation of a cognitive intervention program. The
+sidebar exposes program structure, the difficulty policy, the random
+seed, and the model parameters in collapsible sections. You can save
+and load configurations, **pin runs to overlay** their trajectories
+against a new run, and download a dataset bundle to feed back into the
 Estimation page.
 
 ### 3. Estimation
 
 Fit the PCIP model to data — either freshly simulated in-app or
-uploaded as a `.pt` bundle. A live progress bar and loss chart track
+uploaded as a dataset bundle. A live progress bar and loss chart track
 the optimization in real time, then four diagnostic tabs report
-**convergence**, **global parameter recovery**, **latent recovery**
-(individual abilities, arousal targets, game preferences), and
-**OGS fit** with residual diagnostics. Fitting is restricted to a
-small problem size (I ≤ 30, T ≤ 15, M ≤ 10) so it completes within
-the Streamlit Cloud free-tier compute budget; full-scale runs should
-be done locally or against the source repository.
+**convergence**, **global parameter recovery**, **latent recovery**,
+and **observed game-score fit** with residual diagnostics. Problem size
+is restricted in the hosted app so it completes within the Streamlit
+Cloud free-tier compute budget; full-scale runs should be done locally.
 
 ---
 
@@ -107,62 +88,17 @@ a CUDA build of PyTorch already installed locally, you can drop the
 python _smoke_test.py
 ```
 
-Runs 11 end-to-end cases — imports, all SA components, simulator
-(staircase / random / null policies), `.pt` bundle round-trip,
-estimator with progress callback, recovery diagnostics, YAML config
-round-trip, and the upload-validation error path. Useful before
-committing non-trivial changes.
-
----
-
-## Repository layout
-
-```
-picp_digital_twin_app/
-├── app.py                        # Landing page (dark theme + cover image)
-├── pages/
-│   ├── 1_Sensitivity_Analysis.py
-│   ├── 2_Simulation.py
-│   └── 3_Estimation.py
-├── theme.py                      # Shared CSS, palette, page header bar
-├── plotting.py                   # prettify, add_subplot_label, PNG export
-├── components.py                 # NumPy implementations of the 9 SA functions
-├── Simulation_Estimation/        # Vendored PyTorch simulator + estimator
-│   ├── core/, policy/, estimator/
-│   ├── games.py, participants.py, simulator.py
-│   └── config/default_params.yaml
-├── CoverImage.png                # Landing-page hero
-├── requirements.txt
-├── .streamlit/config.toml        # Native dark theme + brand colors
-├── _smoke_test.py                # 11-case test harness
-└── LICENSE                       # MIT
-```
-
-The PyTorch simulator under `Simulation_Estimation/` is a vendored copy
-of the master implementation, kept in-tree so the deploy is
-self-contained. The pages prefer this local copy over any sibling
-`../Simulation_Estimation/` used during local development.
-
----
-
-## Deployment
-
-The live app is hosted on **Streamlit Community Cloud** from this
-repository's `main` branch, with `app.py` as the entry point. To
-redeploy a fork:
-
-1. Push the directory to a public GitHub repository.
-2. Visit <https://share.streamlit.io>, click **New app**, and point it
-   at the repo with `app.py` as the main file.
-3. Default Python version (3.11+) is fine.
+Runs an end-to-end suite covering imports, all sensitivity-analysis
+components, the simulator, the dataset round-trip, and the estimator.
+Useful before committing non-trivial changes.
 
 ---
 
 ## Citation
 
-The accompanying paper is currently in preparation. Once the preprint
-is available, the landing-page **"Paper"** button will go live and a
-citation block will be added here.
+If you use this app or the underlying model in your research, please
+cite the accompanying paper. Full citation details will be added here
+shortly.
 
 ---
 
